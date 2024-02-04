@@ -4,8 +4,7 @@ import chess
 import struct
 
 symbols = chess.PIECE_SYMBOLS[1:] # drop None
-sym_dict = {x:i for i, x in enumerate(([x.upper() for x in symbols] + symbols))}
-print(sym_dict)
+sym_dict = {x:i+1 for i, x in enumerate(([x.upper() for x in symbols] + symbols))}
 
 def mb(v: int, size: int) -> bytes:
     l = {1: 'B', 2: 'H', 4: 'I', 8: 'Q'}
@@ -16,7 +15,7 @@ class Board():
         self.fen = fen
         self.board = chess.Board(fen)
 
-    def serialize(self):
+    def serialize(self) -> bytes:
         """
         8x8 position
         each position - KQRBNP = 6*2 = 4 bits
@@ -49,8 +48,11 @@ class Board():
         b += mb(castling_value, 1)
         b += mb(self.board.halfmove_clock, 1)
         b += mb(self.board.fullmove_number, 1)
+        return b
 
 if __name__ == "__main__":
     b = Board('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1')
-    b.serialize()
+    o = b.serialize()
+    breakpoint()
+
 
