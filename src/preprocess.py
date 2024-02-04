@@ -1,12 +1,12 @@
 #! /usr/bin/env python3
 
 import chess.pgn
-import h5py
 import numpy as np
 from board import Board
 import time
 import traceback
 import os
+from pathlib import Path
 
 DEBUG = os.getenv("DEBUG", False)
 
@@ -20,22 +20,12 @@ result = {
 
 count = 0
 game_count = 0
-INIT_SIZE = 10_000_000
-
-
-def create_dataset():
-    file = h5py.File("./data/dataset.h5", "w")
-    data_dset = file.create_dataset(
-        "data", (INIT_SIZE, 68), maxshape=(None, 68), dtype="uint8"
-    )
-    labels_dset = file.create_dataset(
-        "labels", (INIT_SIZE,), maxshape=(None,), dtype="int8"
-    )
-    return data_dset, labels_dset, file
-
+INIT_SIZE = 5_000_000
+SAVE_NPZ = Path("./data/dataset_5mil_games.npz")
 
 if __name__ == "__main__":
-    data_dset, labels_dset, file = create_dataset()
+    data_dset = np.zeros(shape=(INIT_SIZE, 2, 8, 8), dtype="uint8")
+    labels_dset = np.zeros(shape=(INIT_SIZE,), dtype="int8")
     prev_time = time.time()
 
     with open("./data/DATABASE4U.pgn", "r") as f:
@@ -50,15 +40,11 @@ if __name__ == "__main__":
                     if DEBUG:
                         print(game.board().fen(), score)
                     labels_dset[count] = score
-                    data_dset[count] = np.frombuffer(
-                        Board(game.board().fen()).serialize(), dtype="uint8"
-                    )
+                    data_dset[count] = Board(game.board().fen()).serialize()
                     count += 1
                     while game := game.next():
                         labels_dset[count] = score
-                        data_dset[count] = np.frombuffer(
-                            Board(game.board().fen()).serialize(), dtype="uint8"
-                        )
+                        data_dset[count] = Board(game.board().fen()).serialize()
                         count += 1
                         if DEBUG:
                             print(game.board().fen(), score)
@@ -73,9 +59,9 @@ if __name__ == "__main__":
                     prev_time = current_time
         except KeyboardInterrupt:
             print(f"Processed {count} games. Saving to file.")
-            file.close()
+            np.savez(SAVE_NPZ, data=data_dset[:count], labels=labels_dset[:count])
         except Exception as e:
             print(e)
             print(traceback.format_exc())
             print(f"Processed {count} games. Saving to file.")
-            file.close()
+            np.savez(SAVE_NPZ, data=data_dset[:count], labels=labels_dset[:count])
