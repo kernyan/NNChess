@@ -2,4 +2,6 @@ chess
 h5py
 torch
 numpy
+pandas
+pyarrow
 
