@@ -1,5 +1,5 @@
-# NNChineseChess
-Chinese Chess engine with NN Board Evaluation Policy
+# NNChess
+Chess engine with NN Board Evaluation Policy
 
 ## Plan
 - [X] get board + win/loss dataset
