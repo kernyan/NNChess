@@ -19,7 +19,7 @@ pos = [
 
 # CHOICE = "p_linear_1mil"
 CHOICE = "p_conv2d_small"
-MODEL = f"model_dataset_80000_games_{CHOICE}_19k"
+MODEL = f"model_dataset_56000_{CHOICE}_epoch_4"
 
 if __name__ == "__main__":
     # b = Board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")

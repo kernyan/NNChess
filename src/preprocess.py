@@ -28,7 +28,8 @@ if __name__ == "__main__":
     labels_dset = np.zeros(shape=(INIT_SIZE,), dtype="int8")
     prev_time = time.time()
 
-    with open("./data/DATABASE4U.pgn", "r") as f:
+    # https://lumbrasgigabase.com/en/download-in-pgn-format-en/
+    with open("./data/lumbras_giga_base.pgn", "r") as f:
         try:
             while True:
                 try:

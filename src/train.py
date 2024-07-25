@@ -146,8 +146,8 @@ model_list = {
     "p_conv2d_small": ConvModel,
 }
 
-MODEL_FILE = "./data/dataset_19k_games.npz"
-MODEL = f"dataset_80000_games_{CHOICE}_19k"
+MODEL_FILE = "./data/dataset_5mil_games.npz"
+MODEL = f"dataset_56000_{CHOICE}"
 
 if __name__ == "__main__":
     loader = ChessDataset(MODEL_FILE)
