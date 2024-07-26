@@ -7,6 +7,9 @@ from torch.nn import functional as F
 import numpy as np
 import pandas as pd
 
+from models.resnet import ResnetBoard
+from models.convnet import Conv2dBoard
+
 
 def save_to_csv(train_losses, val_losses, filename):
     df = pd.DataFrame({"train_losses": train_losses, "val_losses": val_losses})
@@ -28,54 +31,6 @@ class ChessDataset(Dataset):
         return torch.from_numpy(self.data[idx]).float(), torch.unsqueeze(
             torch.tensor(self.label[idx]).float(), dim=0
         )
-
-
-class ConvModel(nn.Module):
-    def __init__(self):
-        super(ConvModel, self).__init__()
-        self.a1 = nn.Conv2d(2, 16, kernel_size=3, padding=1)
-        self.a2 = nn.Conv2d(16, 16, kernel_size=3, padding=1)
-        self.a3 = nn.Conv2d(16, 32, kernel_size=3, stride=2)
-
-        self.b1 = nn.Conv2d(32, 32, kernel_size=3, padding=1)
-        self.b2 = nn.Conv2d(32, 32, kernel_size=3, padding=1)
-        self.b3 = nn.Conv2d(32, 64, kernel_size=3, stride=2)
-
-        self.c1 = nn.Conv2d(64, 64, kernel_size=2, padding=1)
-        self.c2 = nn.Conv2d(64, 64, kernel_size=2, padding=1)
-        self.c3 = nn.Conv2d(64, 128, kernel_size=2, stride=2)
-
-        self.d1 = nn.Conv2d(128, 128, kernel_size=1)
-        self.d2 = nn.Conv2d(128, 128, kernel_size=1)
-        self.d3 = nn.Conv2d(128, 128, kernel_size=1)
-
-        self.last = nn.Linear(128, 1)
-
-    def forward(self, x):
-        x = F.relu(self.a1(x))
-        x = F.relu(self.a2(x))
-        x = F.relu(self.a3(x))
-
-        # 4x4
-        x = F.relu(self.b1(x))
-        x = F.relu(self.b2(x))
-        x = F.relu(self.b3(x))
-
-        # 2x2
-        x = F.relu(self.c1(x))
-        x = F.relu(self.c2(x))
-        x = F.relu(self.c3(x))
-
-        # 1x128
-        x = F.relu(self.d1(x))
-        x = F.relu(self.d2(x))
-        x = F.relu(self.d3(x))
-
-        x = x.view(-1, 128)
-        x = self.last(x)
-
-        # value output
-        return F.tanh(x)
 
 
 def train_and_validate(model, train_dataset, val_dataset, criterion, optimizer, device):
@@ -130,7 +85,7 @@ def train_and_validate(model, train_dataset, val_dataset, criterion, optimizer, 
 
                 if avg_val_loss < best_val_lost:
                     best_val_lost = avg_val_loss
-                    torch.save(model.state_dict(), f"./data/model_{MODEL}.pth")
+                    torch.save(model.state_dict(), MODEL_WEIGHT)
                     print(
                         f"Model saved at ./data/model_{MODEL}.pth, epoch {epoch} with loss: {avg_val_loss:.6f}"
                     )
@@ -141,13 +96,15 @@ def train_and_validate(model, train_dataset, val_dataset, criterion, optimizer, 
 
 
 BATCH_SIZE = 256
-CHOICE = "p_conv2d_small"
+CHOICE = "resnet"
 model_list = {
-    "p_conv2d_small": ConvModel,
+    "convnet": Conv2dBoard,
+    "resnet": ResnetBoard,
 }
 
 MODEL_FILE = "./data/dataset_5mil_games.npz"
 MODEL = f"dataset_56000_{CHOICE}"
+MODEL_WEIGHT = f"./data/model_{MODEL}.pth"
 
 if __name__ == "__main__":
     loader = ChessDataset(MODEL_FILE)
@@ -164,6 +121,10 @@ if __name__ == "__main__":
 
     criterion = nn.MSELoss()
     model = model_list[CHOICE]()
+
+    checkpoint = torch.load(MODEL_WEIGHT)
+    model.load_state_dict(checkpoint)
+
     print(
         f"Model {CHOICE} has {sum(p.numel() for p in model.parameters() if p.requires_grad)} parameters"
     )
