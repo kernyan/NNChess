@@ -79,7 +79,13 @@ class Board:
         out[0] = state.reshape(8, 8)
         out[1] = self.board.turn == chess.WHITE
 
-        return out
+        # convert from 2,8,8 to 8,8,3
+        channel_1 = out[0, :, :]
+        channel_2 = out[1, :, :]
+        channel_3 = channel_1  # repeat channel 1
+        new_data = np.stack((channel_1, channel_2, channel_3), axis = -1)
+
+        return new_data
 
 
 if __name__ == "__main__":

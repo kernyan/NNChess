@@ -20,8 +20,8 @@ pos = [
 ]
 
 #CHOICE = "convnet"
-CHOICE = "resnet"
-MODEL = f"model_dataset_56000_{CHOICE}_epoch_18"
+CHOICE = "resnet_883"
+MODEL = f"model_dataset_56000_{CHOICE}"
 
 if __name__ == "__main__":
     model = train.model_list[CHOICE]()

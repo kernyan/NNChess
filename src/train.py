@@ -1,5 +1,6 @@
 #! /usr/bin/env python3
 
+from pathlib import Path
 import torch
 from torch import nn, optim
 from torch.utils.data import Dataset, random_split, Subset, DataLoader
@@ -8,6 +9,7 @@ import numpy as np
 import pandas as pd
 
 from models.resnet import ResnetBoard
+from models.resnet_883 import Resnet883Board
 from models.convnet import Conv2dBoard
 
 
@@ -96,13 +98,15 @@ def train_and_validate(model, train_dataset, val_dataset, criterion, optimizer, 
 
 
 BATCH_SIZE = 256
-CHOICE = "resnet"
+CHOICE = "resnet_883"
 model_list = {
     "convnet": Conv2dBoard,
     "resnet": ResnetBoard,
+    "resnet_883": Resnet883Board,
 }
 
-MODEL_FILE = "./data/dataset_5mil_games.npz"
+#MODEL_FILE = "./data/dataset_5mil_games.npz"
+MODEL_FILE = "./data/dataset_5mil_games_883.npz"
 MODEL = f"dataset_56000_{CHOICE}"
 MODEL_WEIGHT = f"./data/model_{MODEL}.pth"
 
@@ -122,8 +126,9 @@ if __name__ == "__main__":
     criterion = nn.MSELoss()
     model = model_list[CHOICE]()
 
-    checkpoint = torch.load(MODEL_WEIGHT)
-    model.load_state_dict(checkpoint)
+    if Path(MODEL_WEIGHT).exists():
+        checkpoint = torch.load(MODEL_WEIGHT)
+        model.load_state_dict(checkpoint)
 
     print(
         f"Model {CHOICE} has {sum(p.numel() for p in model.parameters() if p.requires_grad)} parameters"
