@@ -11,12 +11,21 @@ import pandas as pd
 from models.resnet import ResnetBoard
 from models.resnet_883 import Resnet883Board
 from models.convnet import Conv2dBoard
+from models.resnet18_uai import ResNet18
 
 
 def save_to_csv(train_losses, val_losses, filename):
     df = pd.DataFrame({"train_losses": train_losses, "val_losses": val_losses})
     df.to_csv(filename, index=False)
 
+
+def pad_to_224(tensor):
+    pad_h = 224 - 8
+    pad_w = 224 - 8
+    if len(tensor.shape) == 1:
+        return tensor
+    padded_tensor = F.pad(tensor, (0, pad_h, 0, pad_w), mode="constant", value=0)
+    return padded_tensor
 
 class ChessDataset(Dataset):
     def __init__(self, path):
@@ -30,9 +39,10 @@ class ChessDataset(Dataset):
 
     def __getitem__(self, idx):
         # convert to float
-        return torch.from_numpy(self.data[idx]).float(), torch.unsqueeze(
+        o = torch.from_numpy(self.data[idx]).float(), torch.unsqueeze(
             torch.tensor(self.label[idx]).float(), dim=0
         )
+        return [pad_to_224(x) for x in o]
 
 
 def train_and_validate(model, train_dataset, val_dataset, criterion, optimizer, device):
@@ -98,15 +108,16 @@ def train_and_validate(model, train_dataset, val_dataset, criterion, optimizer, 
 
 
 BATCH_SIZE = 256
-CHOICE = "resnet_883"
+CHOICE = "resnet_uai"
 model_list = {
     "convnet": Conv2dBoard,
     "resnet": ResnetBoard,
     "resnet_883": Resnet883Board,
+    "resnet_uai": ResNet18,
 }
 
 #MODEL_FILE = "./data/dataset_5mil_games.npz"
-MODEL_FILE = "./data/dataset_5mil_games_883.npz"
+MODEL_FILE = "./data/dataset_5mil_games_388.npz"
 MODEL = f"dataset_56000_{CHOICE}"
 MODEL_WEIGHT = f"./data/model_{MODEL}.pth"
 

@@ -20,7 +20,7 @@ pos = [
 ]
 
 #CHOICE = "convnet"
-CHOICE = "resnet_883"
+CHOICE = "resnet_uai"
 MODEL = f"model_dataset_56000_{CHOICE}"
 
 if __name__ == "__main__":
