@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <h1>{% block title %}Andyv2{% endblock %}</h1>
+
+  <form method="post">
+    <div class="form-group">
+      <label for="move">Next move</label>
+      <input type="text" name="move" class="form-control" value="{{ request.form['move'] }}"></input>
+    </div>
+    <div class="form-group">
+      <button type="submit" class="btn btn-primary">Submit</button>
+    </div>
+    <div class="form-group">
+      <button type="submit" name="action" value="reset" class="btn btn-primary">Reset</button>
+    </div>
+  </form>
+
+  <div>
+    {{ imgf['image1'] | safe }}
+  </div>
+{% endblock %}

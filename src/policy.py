@@ -28,6 +28,8 @@ if __name__ == "__main__":
     model.eval()
     model.load_state_dict(torch.load(f"./data/{MODEL}.pth"))
 
+    torch.set_printoptions(sci_mode=False)
+
     with torch.no_grad():
         o = torch.from_numpy(np.array([Board(p).serialize() for p in pos])).float()
         output = model(o)
