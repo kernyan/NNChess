@@ -3,6 +3,8 @@ from typing import NamedTuple
 import torch
 from torch import nn
 
+from untetherai.model_quantizer.acquisition import ChannelsLastModule
+
 class ResidualBlockParams(NamedTuple):
     """Class for ResNet18 block parameters
 
@@ -194,7 +196,7 @@ class ResNet18(nn.Module):
             )
         
         self.fc = nn.Sequential(
-            nn.Linear(1024, 1),
+            #nn.Linear(1024, 1),
             nn.Tanh()
         )
 
@@ -204,6 +206,32 @@ class ResNet18(nn.Module):
         x = self.residuals(x)
         if self.flatten:
             x = self.output(x)
-        x = x.squeeze()
+        #x = x.reshape([1024])     #not supported by kernel library
+        #x = x.squeeze()           #not supported by kernel library
+        #x = x.sum(d)              #not supported by kernel library
+        #x = x.sum(dim=(0,1,2))    #not supported by kernel library
+        x = x.permute(0, 2, 3, 1)
+        x = x.sum(dim=(1,2,3))
         x = self.fc(x)
         return x
+
+
+class RN18Model(torch.nn.Module):
+    """
+    ResNet18 model
+    takes in 224,224,3
+    """
+    
+    def get_input_shapes(self) -> list[tuple[int, ...]]:
+        return [(1, 224, 224, 3)]
+
+    def __init__(self):
+        """constructor"""
+        super().__init__()
+
+        model = ResNet18().eval()
+        self.layer0 = ChannelsLastModule(model, (2,), 2)
+
+    def forward(self, x: torch.Tensor):
+        """evaluator"""
+        return self.layer0(x)
